@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スペコン練習 — 100語</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#F6F3EF}
+  button{cursor:pointer;font-family:inherit}
+  input{font-family:inherit}
+  ::-webkit-scrollbar{width:4px}
+  ::-webkit-scrollbar-thumb{background:#E3DDD6;border-radius:2px}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pop{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+  .bh{transition:opacity .15s,transform .15s}
+  .bh:hover{opacity:.85;transform:translateY(-1px)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useRef,useEffect}=React;
+
+const WORDS=[
+  {no:1,ja:"日曜日",en:"Sunday"},{no:2,ja:"月曜日",en:"Monday"},{no:3,ja:"火曜日",en:"Tuesday"},
+  {no:4,ja:"水曜日",en:"Wednesday"},{no:5,ja:"木曜日",en:"Thursday"},{no:6,ja:"金曜日",en:"Friday"},
+  {no:7,ja:"土曜日",en:"Saturday"},{no:8,ja:"１月",en:"January"},{no:9,ja:"２月",en:"February"},
+  {no:10,ja:"３月",en:"March"},{no:11,ja:"４月",en:"April"},{no:12,ja:"５月",en:"May"},
+  {no:13,ja:"６月",en:"June"},{no:14,ja:"７月",en:"July"},{no:15,ja:"８月",en:"August"},
+  {no:16,ja:"９月",en:"September"},{no:17,ja:"１０月",en:"October"},{no:18,ja:"１１月",en:"November"},
+  {no:19,ja:"１２月",en:"December"},{no:20,ja:"春",en:"spring"},{no:21,ja:"夏",en:"summer"},
+  {no:22,ja:"秋（a）",en:"autumn"},{no:23,ja:"秋（f）",en:"fall"},{no:24,ja:"冬",en:"winter"},
+  {no:25,ja:"季節",en:"season"},{no:26,ja:"色",en:"color"},{no:27,ja:"する",en:"do"},
+  {no:28,ja:"勉強する",en:"study"},{no:29,ja:"行く",en:"go"},{no:30,ja:"日本",en:"Japan"},
+  {no:31,ja:"英語",en:"English"},{no:32,ja:"科目",en:"subject"},{no:33,ja:"〜について・およそ〜",en:"about"},
+  {no:34,ja:"よく",en:"often"},{no:35,ja:"私は",en:"I"},{no:36,ja:"〜も",en:"too"},
+  {no:37,ja:"be動詞",en:"is / am / are"},{no:38,ja:"〜を好む",en:"like"},{no:39,ja:"試合・ゲーム",en:"game"},
+  {no:40,ja:"（手段・道具）で",en:"on"},{no:41,ja:"〜の点において",en:"at"},{no:42,ja:"〜で・〜になって",en:"in"},
+  {no:43,ja:"会う",en:"meet"},{no:44,ja:"あなた",en:"you"},{no:45,ja:"ファン",en:"fan"},
+  {no:46,ja:"〜のあとに",en:"after"},{no:47,ja:"ダンサー",en:"dancer"},{no:48,ja:"はい",en:"yes"},
+  {no:49,ja:"いいえ",en:"no"},{no:50,ja:"ない",en:"not"},{no:51,ja:"日",en:"day"},
+  {no:52,ja:"（音楽）ロック",en:"rock"},{no:53,ja:"動き",en:"action"},{no:54,ja:"アニメ",en:"anime"},
+  {no:55,ja:"漫画",en:"manga"},{no:56,ja:"週末",en:"weekend"},{no:57,ja:"ペット",en:"pet"},
+  {no:58,ja:"何",en:"what"},{no:59,ja:"〜のことに",en:"of"},{no:60,ja:"見る",en:"look"},
+  {no:61,ja:"この",en:"this"},{no:62,ja:"持っている",en:"have"},{no:63,ja:"愛する",en:"love"},
+  {no:64,ja:"味・風味",en:"flavor"},{no:65,ja:"タブレット",en:"tablet"},{no:66,ja:"多くの〜",en:"many"},
+  {no:67,ja:"消防士",en:"firefighter"},{no:68,ja:"笑顔",en:"smile"},{no:69,ja:"スケートボード",en:"skateboard"},
+  {no:70,ja:"人気の",en:"popular"},{no:71,ja:"声",en:"voice"},{no:72,ja:"彼は",en:"he"},
+  {no:73,ja:"彼女は",en:"she"},{no:74,ja:"〜できる",en:"can"},{no:75,ja:"〜できない",en:"cannot"},
+  {no:76,ja:"力強い",en:"powerful"},{no:77,ja:"とても",en:"very"},{no:78,ja:"うまく",en:"well"},
+  {no:79,ja:"歌手",en:"singer"},{no:80,ja:"お気に入りの",en:"favorite"},{no:81,ja:"歌",en:"song"},
+  {no:82,ja:"それ",en:"it"},{no:83,ja:"どうぞ・すみませんが",en:"please"},{no:84,ja:"教える",en:"teach"},
+  {no:85,ja:"もちろん",en:"sure"},{no:86,ja:"駒",en:"piece"},{no:87,ja:"動かす・動く",en:"move"},
+  {no:88,ja:"場所・空間",en:"space"},{no:89,ja:"前へ",en:"forward"},{no:90,ja:"おじ",en:"uncle"},
+  {no:91,ja:"言語",en:"language"},{no:92,ja:"彼の",en:"his"},{no:93,ja:"彼女の",en:"her"},
+  {no:94,ja:"話す",en:"speak"},{no:95,ja:"〜が得意",en:"be good at"},{no:96,ja:"毎日",en:"every day"},
+  {no:97,ja:"放課後",en:"after school"},{no:98,ja:"うちで",en:"at home"},
+  {no:99,ja:"写真を撮る",en:"take a picture"},{no:100,ja:"〜を見る",en:"look at"},
+];
+
+const C={
+  bg:"#F6F3EF",paper:"#FDFAF6",dark:"#1C1917",mid:"#6B6460",light:"#B8AEA4",border:"#E3DDD6",
+  accent:"#2C5F8A",accentL:"#EEF4FA",gold:"#8A6C2C",goldL:"#FAF4EE",
+  ok:"#1A6B3C",okL:"#EEF9F3",ng:"#8A2C2C",ngL:"#FAF0EE",
+};
+const FONT="'UD デジタル 教科書体 NK','UDDigiKyokasho NK-R','BIZ UDPGothic','Noto Sans JP',sans-serif";
+
+const norm=(s)=>s.trim().toLowerCase().replace(/\s+/g," ");
+const shuffle=(a)=>[...a].sort(()=>Math.random()-.5);
+
+// ── APP ──────────────────────────────────────────────────────────────────────
+function App(){
+  const[screen,setScreen]=useState("home");
+  const[range,setRange]=useState("all");
+  const rw=()=>{
+    if(range==="all")return WORDS;
+    const[s,e]=range.split("-").map(Number);
+    return WORDS.filter(w=>w.no>=s&&w.no<=e);
+  };
+  return(
+    <div style={{minHeight:"100vh",background:C.bg,fontFamily:FONT,color:C.dark}}>
+      <header style={{background:C.dark,position:"sticky",top:0,zIndex:100}}>
+        <div style={{maxWidth:720,margin:"0 auto",padding:"0 20px",height:52,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <button onClick={()=>setScreen("home")} style={{background:"none",border:"none",display:"flex",alignItems:"baseline",gap:12}}>
+            <span style={{fontFamily:FONT,fontSize:18,fontWeight:400,color:"#E8DFD0",letterSpacing:".06em"}}>スペコン練習</span>
+            <span style={{fontSize:10,color:"#4B4440",letterSpacing:".06em"}}>夏休み明け · 100語</span>
+          </button>
+          <button onClick={()=>setScreen("list")} style={{background:"none",border:"1px solid #3A3330",color:"#9B8F85",padding:"4px 14px",fontSize:11,letterSpacing:".06em"}}>
+            単語一覧
+          </button>
+        </div>
+      </header>
+      <div style={{maxWidth:720,margin:"0 auto",padding:"28px 20px 80px"}}>
+        {screen==="home"  && <HomeScreen  setScreen={setScreen} range={range} setRange={setRange}/>}
+        {screen==="flash" && <FlashScreen words={rw()} onBack={()=>setScreen("home")}/>}
+        {screen==="spell" && <SpellScreen words={rw()} onBack={()=>setScreen("home")}/>}
+        {screen==="list"  && <ListScreen  onBack={()=>setScreen("home")}/>}
+      </div>
+    </div>
+  );
+}
+
+// ── HOME ─────────────────────────────────────────────────────────────────────
+function HomeScreen({setScreen,range,setRange}){
+  const RANGES=[
+    {id:"all",label:"全100語",sub:"No.1〜100"},
+    {id:"1-25",label:"前半①",sub:"No.1〜25"},
+    {id:"26-50",label:"前半②",sub:"No.26〜50"},
+    {id:"51-75",label:"後半①",sub:"No.51〜75"},
+    {id:"76-100",label:"後半②",sub:"No.76〜100"},
+  ];
+  return(
+    <div style={{animation:"rise .4s ease"}}>
+      <div style={{background:C.dark,padding:"32px 28px",marginBottom:20,color:"#E8DFD0"}}>
+        <p style={{fontSize:10,color:"#6B6460",letterSpacing:".12em",marginBottom:10}}>SPELLING CONTEST PRACTICE</p>
+        <h1 style={{fontFamily:FONT,fontSize:"clamp(24px,6vw,40px)",fontWeight:400,lineHeight:1.3,marginBottom:10}}>
+          スペコン対策<br/><span style={{color:"#C9B99A"}}>100語 練習サイト</span>
+        </h1>
+        <p style={{fontSize:13,color:"#6B6460",lineHeight:1.9}}>フラッシュカードで意味を確認して、<br/>スペル入力で書けるか試してみよう。</p>
+      </div>
+
+      <p style={{fontSize:11,color:C.mid,letterSpacing:".08em",marginBottom:8}}>練習する範囲を選ぶ</p>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:2,marginBottom:24}}>
+        {RANGES.map(r=>{
+          const sel=range===r.id;
+          return(
+            <button key={r.id} onClick={()=>setRange(r.id)}
+              style={{padding:"12px 10px",textAlign:"left",border:`1px solid ${sel?C.accent:C.border}`,background:sel?C.accentL:C.paper,transition:"all .15s"}}>
+              <p style={{fontSize:13,fontWeight:sel?500:400,color:sel?C.accent:C.dark,marginBottom:2}}>{r.label}</p>
+              <p style={{fontSize:10,color:C.light}}>{r.sub}</p>
+              {sel&&<div style={{height:2,background:C.accent,marginTop:6,width:20}}/>}
+            </button>
+          );
+        })}
+      </div>
+
+      <p style={{fontSize:11,color:C.mid,letterSpacing:".08em",marginBottom:8}}>練習モードを選ぶ</p>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:2}}>
+        <button className="bh" onClick={()=>setScreen("flash")}
+          style={{padding:"24px 20px",background:C.paper,border:`1px solid ${C.border}`,textAlign:"left",boxShadow:"0 2px 12px rgba(0,0,0,.04)"}}>
+          <div style={{fontSize:28,marginBottom:10}}>🃏</div>
+          <p style={{fontFamily:FONT,fontSize:18,color:C.dark,marginBottom:4}}>フラッシュカード</p>
+          <p style={{fontSize:11,color:C.light,lineHeight:1.7}}>日本語→英語を見て確認<br/>覚えた／もう一度で進める</p>
+          <div style={{height:2,background:C.accent,marginTop:14,width:28}}/>
+        </button>
+        <button className="bh" onClick={()=>setScreen("spell")}
+          style={{padding:"24px 20px",background:C.paper,border:`1px solid ${C.border}`,textAlign:"left",boxShadow:"0 2px 12px rgba(0,0,0,.04)"}}>
+          <div style={{fontSize:28,marginBottom:10}}>⌨️</div>
+          <p style={{fontFamily:FONT,fontSize:18,color:C.dark,marginBottom:4}}>スペル入力</p>
+          <p style={{fontSize:11,color:C.light,lineHeight:1.7}}>日本語を見て英語を入力<br/>本番形式で腕試し</p>
+          <div style={{height:2,background:C.gold,marginTop:14,width:28}}/>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── FLASH ────────────────────────────────────────────────────────────────────
+function FlashScreen({words,onBack}){
+  const[deck,setDeck]=useState(()=>shuffle(words));
+  const[idx,setIdx]=useState(0);
+  const[flipped,setFlipped]=useState(false);
+  const[score,setScore]=useState({ok:0,ng:0});
+  const[done,setDone]=useState(false);
+  const[wrongList,setWrongList]=useState([]);
+  const cur=deck[idx];
+
+  const next=(ok)=>{
+    if(!ok)setWrongList(w=>[...w,cur]);
+    const ns=ok?{...score,ok:score.ok+1}:{...score,ng:score.ng+1};
+    setScore(ns);
+    if(idx+1>=deck.length)setDone(true);
+    else{setIdx(i=>i+1);setFlipped(false);}
+  };
+  const restart=(wrongOnly=false)=>{
+    const nd=wrongOnly?shuffle(wrongList):shuffle(words);
+    setDeck(nd);setIdx(0);setFlipped(false);setScore({ok:0,ng:0});setDone(false);setWrongList([]);
+  };
+
+  return(
+    <div style={{animation:"rise .35s ease"}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}>
+        <button onClick={onBack} style={{background:"none",border:`1px solid ${C.border}`,color:C.mid,padding:"5px 12px",fontSize:11}}>← 戻る</button>
+        <span style={{fontSize:11,color:C.light}}>フラッシュカード · {deck.length}語</span>
+      </div>
+      {done?(
+        <ResultPanel score={score} total={deck.length} wrongList={wrongList}
+          onRestart={()=>restart(false)} onWrongOnly={wrongList.length>0?()=>restart(true):null} label="フラッシュカード"/>
+      ):(
+        <>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.light,marginBottom:8}}>
+            <span>{idx+1} / {deck.length}</span><span style={{color:C.ok}}>No.{cur?.no}</span>
+          </div>
+          <div style={{height:2,background:C.border,marginBottom:20,borderRadius:1}}>
+            <div style={{height:2,background:C.accent,width:`${(idx/deck.length)*100}%`,transition:"width .4s",borderRadius:1}}/>
+          </div>
+          <div onClick={()=>setFlipped(f=>!f)}
+            style={{border:`1px solid ${flipped?C.accent:C.border}`,background:flipped?C.accentL:C.paper,padding:"44px 28px",textAlign:"center",cursor:"pointer",minHeight:180,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",transition:"all .2s",marginBottom:16,boxShadow:"0 2px 16px rgba(0,0,0,.05)"}}>
+            {!flipped?(
+              <>
+                <p style={{fontSize:10,color:C.light,letterSpacing:".12em",marginBottom:14}}>日本語</p>
+                <p style={{fontFamily:FONT,fontSize:"clamp(22px,5vw,30px)",fontWeight:400,color:C.dark,lineHeight:1.4}}>{cur?.ja}</p>
+                <p style={{fontSize:11,color:C.light,marginTop:14,letterSpacing:".06em"}}>タップして英語を確認</p>
+              </>
+            ):(
+              <>
+                <p style={{fontSize:10,color:C.accent,letterSpacing:".12em",marginBottom:14,fontWeight:500}}>ENGLISH</p>
+                <p style={{fontFamily:FONT,fontSize:"clamp(24px,5vw,34px)",fontWeight:400,color:C.accent,letterSpacing:".04em",lineHeight:1.3}}>{cur?.en}</p>
+                <p style={{fontFamily:FONT,fontSize:15,color:C.mid,marginTop:10}}>{cur?.ja}</p>
+              </>
+            )}
+          </div>
+          {flipped?(
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>next(false)} className="bh"
+                style={{flex:1,padding:"13px",border:`1px solid ${C.border}`,background:C.ngL,color:C.ng,fontSize:14,fontWeight:500}}>
+                ✕ もう一度
+              </button>
+              <button onClick={()=>next(true)} className="bh"
+                style={{flex:1,padding:"13px",border:"none",background:C.accent,color:"#fff",fontSize:14,fontWeight:500}}>
+                ○ 覚えた！
+              </button>
+            </div>
+          ):(
+            <button onClick={()=>setFlipped(true)} className="bh"
+              style={{width:"100%",padding:"13px",border:`1px solid ${C.border}`,background:"transparent",color:C.mid,fontSize:13,letterSpacing:".08em"}}>
+              答えを見る
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── SPELL ────────────────────────────────────────────────────────────────────
+function SpellScreen({words,onBack}){
+  const[deck,setDeck]=useState(()=>shuffle(words));
+  const[idx,setIdx]=useState(0);
+  const[input,setInput]=useState("");
+  const[status,setStatus]=useState(null);
+  const[score,setScore]=useState({ok:0,ng:0});
+  const[done,setDone]=useState(false);
+  const[hint,setHint]=useState(0);
+  const[wrongList,setWrongList]=useState([]);
+  const inputRef=useRef();
+  const cur=deck[idx];
+
+  useEffect(()=>{inputRef.current?.focus();},[idx]);
+
+  const check=()=>{
+    if(status!==null||!input.trim())return;
+    const ok=norm(input)===norm(cur.en);
+    setStatus(ok?"ok":"ng");
+    const ns=ok?{...score,ok:score.ok+1}:{...score,ng:score.ng+1};
+    setScore(ns);
+    if(!ok)setWrongList(w=>[...w,{...cur,typed:input.trim()}]);
+    setTimeout(()=>{
+      if(idx+1>=deck.length)setDone(true);
+      else{setIdx(i=>i+1);setInput("");setStatus(null);setHint(0);}
+    },1400);
+  };
+  const restart=(wrongOnly=false)=>{
+    const nd=wrongOnly?shuffle(wrongList):shuffle(words);
+    setDeck(nd);setIdx(0);setInput("");setStatus(null);setScore({ok:0,ng:0});
+    setDone(false);setHint(0);setWrongList([]);
+    setTimeout(()=>inputRef.current?.focus(),50);
+  };
+  const hintText=()=>{
+    if(hint===0)return null;
+    if(hint===1)return `文字数: ${cur.en.length}文字`;
+    return `最初の文字: ${cur.en[0].toUpperCase()}${"_".repeat(cur.en.length-1)}`;
+  };
+  const bc=status===null?C.border:status==="ok"?"#86EFAC":"#FCA5A5";
+  const bg=status===null?C.paper:status==="ok"?C.okL:C.ngL;
+
+  return(
+    <div style={{animation:"rise .35s ease"}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}>
+        <button onClick={onBack} style={{background:"none",border:`1px solid ${C.border}`,color:C.mid,padding:"5px 12px",fontSize:11}}>← 戻る</button>
+        <span style={{fontSize:11,color:C.light}}>スペル入力 · {deck.length}語</span>
+      </div>
+      {done?(
+        <ResultPanel score={score} total={deck.length} wrongList={wrongList}
+          onRestart={()=>restart(false)} onWrongOnly={wrongList.length>0?()=>restart(true):null} label="スペル入力"/>
+      ):(
+        <>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.light,marginBottom:8}}>
+            <span>{idx+1} / {deck.length}</span><span style={{color:C.ok}}>正解 {score.ok}</span>
+          </div>
+          <div style={{height:2,background:C.border,marginBottom:20,borderRadius:1}}>
+            <div style={{height:2,background:C.gold,width:`${(idx/deck.length)*100}%`,transition:"width .4s",borderRadius:1}}/>
+          </div>
+          <div style={{border:`1px solid ${C.border}`,background:C.paper,padding:"32px 24px",textAlign:"center",marginBottom:14,boxShadow:"0 2px 16px rgba(0,0,0,.04)"}}>
+            <p style={{fontSize:10,color:C.light,letterSpacing:".12em",marginBottom:12}}>日本語 → 英語を入力</p>
+            <p style={{fontFamily:FONT,fontSize:"clamp(22px,5vw,30px)",fontWeight:400,color:C.dark,lineHeight:1.4}}>{cur?.ja}</p>
+            <p style={{fontSize:10,color:C.light,marginTop:8}}>No.{cur?.no}</p>
+            {hintText()&&<p style={{fontSize:12,color:C.gold,marginTop:10,fontWeight:500}}>💡 {hintText()}</p>}
+          </div>
+          <input ref={inputRef} type="text" value={input}
+            onChange={e=>setInput(e.target.value)}
+            onKeyDown={e=>e.key==="Enter"&&check()}
+            disabled={status!==null}
+            placeholder="英語を入力して Enter"
+            style={{width:"100%",padding:"16px",border:`2px solid ${bc}`,background:bg,fontSize:"clamp(18px,4vw,22px)",fontFamily:FONT,color:C.dark,textAlign:"center",letterSpacing:".04em",outline:"none",transition:"border-color .2s,background .2s",marginBottom:10}}
+          />
+          {status==="ok"&&<p style={{textAlign:"center",fontSize:14,color:C.ok,fontWeight:500,marginBottom:10}}>○ 正解！ — {cur?.en}</p>}
+          {status==="ng"&&<p style={{textAlign:"center",fontSize:14,color:C.ng,marginBottom:10}}>✕ 正しくは: <strong style={{fontFamily:FONT,fontSize:18}}>{cur?.en}</strong></p>}
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={check} disabled={!input.trim()||status!==null} className="bh"
+              style={{flex:2,padding:"13px",background:(!input.trim()||status!==null)?C.border:C.gold,color:(!input.trim()||status!==null)?C.light:"#fff",border:"none",fontSize:14,fontWeight:500,transition:"background .2s"}}>
+              確認する
+            </button>
+            {status===null&&(
+              <button onClick={()=>setHint(h=>Math.min(h+1,2))} disabled={hint>=2}
+                style={{flex:1,padding:"13px",background:"transparent",color:hint>=2?C.light:C.mid,border:`1px solid ${C.border}`,fontSize:12,opacity:hint>=2?0.5:1}}>
+                ヒント{hint>0?` (${hint}/2)`:""}
+              </button>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── RESULT ───────────────────────────────────────────────────────────────────
+function ResultPanel({score,total,wrongList,onRestart,onWrongOnly,label}){
+  const pct=Math.round((score.ok/total)*100);
+  const msg=pct>=90?"すばらしい！本番も大丈夫！":pct>=70?"なかなか良いです。あと少し！":pct>=50?"もう少し練習しよう。":"間違えた単語を重点的に！";
+  const mc=pct>=90?C.ok:pct>=70?C.accent:pct>=50?C.gold:C.ng;
+  return(
+    <div style={{textAlign:"center",animation:"pop .3s ease"}}>
+      <p style={{fontFamily:FONT,fontSize:11,color:C.light,letterSpacing:".12em",marginBottom:8}}>{label} — RESULT</p>
+      <p style={{fontFamily:FONT,fontSize:68,fontWeight:300,color:C.dark,lineHeight:1,marginBottom:4}}>
+        {score.ok}<span style={{fontSize:26,color:C.light}}> / {total}</span>
+      </p>
+      <p style={{fontFamily:FONT,fontSize:22,color:mc,marginBottom:6}}>{pct}%</p>
+      <p style={{fontSize:13,color:mc,fontWeight:500,marginBottom:24}}>{msg}</p>
+      <div style={{display:"flex",gap:2,marginBottom:20}}>
+        <div style={{flex:1,padding:"14px",background:C.okL,border:"1px solid #86EFAC"}}>
+          <p style={{fontSize:22,fontWeight:700,color:C.ok}}>{score.ok}</p>
+          <p style={{fontSize:10,color:C.ok,marginTop:2}}>正解</p>
+        </div>
+        <div style={{flex:1,padding:"14px",background:C.ngL,border:"1px solid #FCA5A5"}}>
+          <p style={{fontSize:22,fontWeight:700,color:C.ng}}>{score.ng}</p>
+          <p style={{fontSize:10,color:C.ng,marginTop:2}}>不正解</p>
+        </div>
+      </div>
+      {wrongList.length>0&&(
+        <div style={{textAlign:"left",marginBottom:20}}>
+          <p style={{fontSize:11,color:C.mid,letterSpacing:".08em",marginBottom:8}}>間違えた単語</p>
+          <div style={{maxHeight:220,overflowY:"auto",display:"flex",flexDirection:"column",gap:2}}>
+            {wrongList.map((w,i)=>(
+              <div key={i} style={{padding:"10px 14px",background:C.ngL,border:"1px solid #FCA5A5",display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+                <span style={{fontSize:11,color:C.light,minWidth:28}}>No.{w.no}</span>
+                <span style={{fontSize:13,color:C.mid}}>{w.ja}</span>
+                <span style={{color:C.border}}>→</span>
+                <strong style={{fontFamily:FONT,fontSize:15,color:C.dark}}>{w.en}</strong>
+                {w.typed&&<span style={{fontSize:11,color:C.ng,marginLeft:"auto"}}>入力: {w.typed}</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {onWrongOnly&&(
+          <button onClick={onWrongOnly} className="bh"
+            style={{width:"100%",padding:"13px",background:C.ng,color:"#fff",border:"none",fontSize:13,fontWeight:500}}>
+            間違えた{wrongList.length}語だけ再練習
+          </button>
+        )}
+        <button onClick={onRestart} className="bh"
+          style={{width:"100%",padding:"13px",background:C.dark,color:"#F5F2EE",border:"none",fontSize:13}}>
+          全部もう一度
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── LIST ─────────────────────────────────────────────────────────────────────
+function ListScreen({onBack}){
+  const[search,setSearch]=useState("");
+  const filtered=WORDS.filter(w=>w.ja.includes(search)||w.en.toLowerCase().includes(search.toLowerCase())||String(w.no).includes(search));
+  return(
+    <div style={{animation:"rise .35s ease"}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+        <button onClick={onBack} style={{background:"none",border:`1px solid ${C.border}`,color:C.mid,padding:"5px 12px",fontSize:11}}>← 戻る</button>
+        <h2 style={{fontFamily:FONT,fontSize:20,fontWeight:400}}>単語一覧</h2>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:10,background:C.paper,border:`1px solid ${C.border}`,padding:"10px 14px",marginBottom:12}}>
+        <span style={{color:C.light,fontSize:14}}>◌</span>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="検索（日本語・英語・番号）"
+          style={{border:"none",outline:"none",flex:1,fontSize:13,color:C.dark,background:"transparent"}}/>
+        {search&&<button onClick={()=>setSearch("")} style={{background:"none",border:"none",color:C.light,fontSize:13}}>✕</button>}
+      </div>
+      <p style={{fontSize:11,color:C.light,marginBottom:8}}>{filtered.length}語表示中</p>
+      <div style={{display:"flex",flexDirection:"column",gap:1}}>
+        {filtered.map(w=>(
+          <div key={w.no} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",background:C.paper,border:`1px solid ${C.border}`}}>
+            <span style={{fontSize:11,color:C.light,minWidth:28,textAlign:"right"}}>{w.no}</span>
+            <div style={{width:1,height:14,background:C.border}}/>
+            <span style={{fontFamily:FONT,fontSize:14,color:C.mid,flex:1}}>{w.ja}</span>
+            <span style={{fontFamily:FONT,fontSize:16,color:C.dark,fontWeight:400}}>{w.en}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
